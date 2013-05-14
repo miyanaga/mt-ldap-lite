@@ -1,0 +1,68 @@
+jQuery(function() {
+    var $ = jQuery;
+    var $indicator = $('<img />')
+        .attr('id', 'ldap-lite-query-indicator')
+        .attr('src', '<mt:var name="static_uri">images/indicator-login.gif')
+        .css('display', 'none');
+    var $error = $('<p />')
+        .attr('id', 'ldap-lite-query-error')
+        .css('display', 'none');
+
+    var lookup_ldap = function() {
+        var username = $('#name').val();
+        if ( username === '' ) return;
+
+        $indicator.show();
+        $error.hide();
+        $('#external_id-field .field-content').text('');
+
+        $.post('<mt:var name="script_url" escape="js">', {
+            '__mode': 'ldap_lite_test_query_user',
+            'test_query_user': username
+        }, function(data) {
+            if ( data.error ) {
+                $error
+                    .text(data.error)
+                    .show();
+            } else if ( data.result.name ) {
+                $('#external_id-field .field-content').text(data.result.dn);
+                $('#nickname').val(data.result.display_name);
+                $('#email').val(data.result.email);
+
+                <mt:unless name="id">
+                $('#pass').attr('value', data.result.random_token);
+                $('#pass_verify').attr('value', data.result.random_token);
+                </mt:unless>
+            }
+        })
+            .error(function(jqXHR) {
+                $error
+                    .text(jqXHR.status + ' ' + jqXHR.statusText)
+                    .show();
+            })
+            .always(function() {
+                $indicator.hide();
+            });
+
+        return false;
+    };
+
+    var $button = $('<button href="javascript:void(0)"><__trans phrase="Lookup LDAP"></button>')
+        .addClass('action button')
+        .click(lookup_ldap);
+
+
+<mt:if name="id">
+    $('#name')
+        .addClass('short')
+        .after($error)
+        .after($indicator)
+        .after($button);
+<mt:else>
+    $('#name')
+        .addClass('short')
+        .after($error)
+        .after($indicator)
+        .on('change', lookup_ldap);
+</mt:if>
+});

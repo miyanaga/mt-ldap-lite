@@ -1,0 +1,155 @@
+<mtapp:setting
+   id="ldap-lite-ldap_host"
+   label="<__trans phrase="Host">">
+  <input type="text" class="text" name="ldap_host" value="<mt:var name='ldap_host' escape='html'>" >
+</mtapp:setting>
+
+<mtapp:setting
+   id="ldap-lite-ldap_port"
+   label="<__trans phrase="Port">">
+  <input type="text" class="text number" name="ldap_port" value="<mt:var name='ldap_port' escape='html'>" >
+</mtapp:setting>
+
+<mtapp:setting
+    id="ldap-lite-ldap_auth_type"
+    label="<__trans phrase="LDAP Authentication">">
+    <select name="ldap_auth" id="ldap-lite-ldap_auth-select">
+        <option value="none"<mt:if name="ldap_auth_type" eq="none"> selected="selected"</mt:if>><__trans phrase="None"></option>
+        <option value="simple"<mt:if name="ldap_auth_type" eq="simple"> selected="selected"</mt:if>><__trans phrase="Simple"></option>
+    </select>
+</mtapp:setting>
+
+<div id="ldap-lite-ldap_auth-dn" style="display:none">
+<mtapp:setting
+   id="ldap-lite-ldap_root_dn"
+   label="<__trans phrase="Root DN">">
+  <input type="text" class="text" name="ldap_root_dn" value="<mt:var name='ldap_root_dn' escape='html'>" >
+</mtapp:setting>
+
+<mtapp:setting
+   id="ldap-lite-ldap_root_password"
+   label="<__trans phrase="Root Password">">
+  <input type="password" class="text" name="ldap_root_password" value="<mt:var name='ldap_root_password' escape='html'>" >
+</mtapp:setting>
+</div>
+
+<mtapp:setting
+   id="ldap-lite-ldap_users_dn"
+   label="<__trans phrase="Users DN">">
+  <input type="text" class="text" name="ldap_users_dn" value="<mt:var name='ldap_users_dn' escape='html'>" >
+</mtapp:setting>
+
+<mtapp:setting
+   id="ldap-lite-ldap_user_name_attribute"
+   label="<__trans phrase="User Login Name Attribute">">
+  <input type="text" class="text" name="ldap_user_name_attribute" value="<mt:var name='ldap_user_name_attribute' escape='html'>" >
+</mtapp:setting>
+
+<mtapp:setting
+   id="ldap-lite-ldap_user_display_name_attribute"
+   label="<__trans phrase="User Display Name Attribute">">
+  <input type="text" class="text" name="ldap_user_display_name_attribute" value="<mt:var name='ldap_user_display_name_attribute' escape='html'>" >
+</mtapp:setting>
+
+<mtapp:setting
+   id="ldap-lite-ldap_user_email_attribute"
+   label="<__trans phrase="User Email Attribute">">
+  <input type="text" class="text" name="ldap_user_email_attribute" value="<mt:var name='ldap_user_email_attribute' escape='html'>" >
+</mtapp:setting>
+
+<mtapp:setting
+   id="ldap-lite-test"
+   label="<__trans phrase="Testing">">
+   <button id="ldap-lite-test-connection-button" class="action button"><__trans phrase="Test Connection"></button>
+   <input class="text short" type="text" id="ldap-lite-test-query-user" name="test_query_user" value="" placeholder="<__trans phrase='Username'>">
+   <button id="ldap-lite-test-query-user-button" class="action button"><__trans phrase="Test User Query"></button>
+
+    <mtapp:statusmsg
+       id="ldap-lite-test-message-success"
+       class="success hidden"
+       can_close="0">
+    </mtapp:statusmsg>
+    <mtapp:statusmsg
+       id="ldap-lite-test-message-success"
+       class="info hidden"
+       can_close="0">
+    </mtapp:statusmsg>
+    <mtapp:statusmsg
+       id="ldap-lite-test-message-error"
+       class="error hidden"
+       can_close="0">
+    </mtapp:statusmsg>
+</mtapp:setting>
+
+<script type="text/javascript">
+/* <![CDATA[ */
+jQuery(function() {
+    var $ = jQuery;
+    var $type_select = $('#ldap-lite-ldap_auth-select'),
+        $auth_dn = $('#ldap-lite-ldap_auth-dn'),
+        $test = $('#ldap-lite-test-field'),
+        $test_connection = $('#ldap-lite-test-connection-button'),
+        $test_query_user_name = $('#ldap-lite-test-query-user-name');
+        $test_query_user = $('#ldap-lite-test-query-user-button');
+
+    var toggle_auth_type = function() {
+        var type = $type_select.val();
+        if ( type == 'none' )
+            $auth_dn.hide();
+        else
+            $auth_dn.show();
+    };
+
+    toggle_auth_type();
+    $type_select.bind('change', toggle_auth_type);
+
+    var test_ldap = function(form, method) {
+        $test.find('.msg').addClass('hidden');
+        $test.find('.msg-info').removeClass('hidden').find('.msg-text').text('<__trans phrase="Connecting...">');
+
+        var $__mode = $(form).find('input[name=__mode]');
+        var original_method = $__mode.val();
+
+        $__mode.val(method);
+        var serialized = $(form).serialize();
+        $__mode.val(original_method);
+
+        var url = '<mt:var name="script_url" escape="js">';
+        $.post(url, serialized, function(data) {
+            var target, message;
+
+            console.log(data);
+
+            if ( data.result && data.result.message ) {
+                target = '.msg-success';
+                message = data.result.message;
+            } else if ( data.result ) {
+                target = '.msg-error';
+                message = '<__trans phrase="Unknown result">';
+            } else if ( data.error ) {
+                target = '.msg-error';
+                message = data.error;
+            }
+
+            $test.find('.msg').addClass('hidden');
+            $test.find(target).removeClass('hidden').find('.msg-text').text(message);
+        })
+        .fail(function(jqXHR) {
+            var message = jqXHR.status + ' ' + jqXHR.statusText;
+            $test.find('.msg').addClass('hidden');
+            $test.find('.msg-error').removeClass('hidden').find('.msg-text').text(message);
+        });
+
+        return false;
+    };
+
+    $test_connection.click(function() {
+        return test_ldap(this.form, 'ldap_lite_test_connection');
+    });
+
+    $test_query_user.click(function() {
+        return test_ldap(this.form, 'ldap_lite_test_query_user');
+    });
+});
+/* ]]> */
+</script>

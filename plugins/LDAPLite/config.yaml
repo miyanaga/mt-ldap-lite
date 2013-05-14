@@ -1,0 +1,49 @@
+id: LDAPLite
+name: LDAP Lite
+author_name: ideaman's Inc.
+author_link: http://www.ideamans.com/
+version: 0.5
+# schema_version: 0.11
+description: <__trans phrase="User authentication with LDAP.">
+l10n_class: MT::LDAPLite::L10N
+
+object_types:
+    author:
+        ldap_lite_auth_rule: string meta
+
+system_config_template:
+    code: $LDAPLite::MT::LDAPLite::CMS::system_config
+
+config_settings:
+    LDAPLiteRootPassword: ~
+    LDAPLiteTimeout:
+        Default: 10
+
+settings:
+    ldap_host: ~
+    ldap_port:
+        Default: 389
+    ldap_auth_type:
+        Default: simple
+    ldap_root_dn: ~
+    ldap_root_password: ~
+    ldap_users_dn: ~
+    ldap_user_name_attribute:
+        Default: displayname
+    ldap_user_display_name_attribute:
+        Default: displayname
+    ldap_user_email_attribute:
+        Default: email
+    ldap_user_attributes: ~
+
+applications:
+    cms:
+        methods:
+            ldap_lite_test_connection: $LDAPLite::MT::LDAPLite::CMS::method_ldap_lite_test_connection
+            ldap_lite_test_query_user: $LDAPLite::MT::LDAPLite::CMS::method_ldap_lite_test_query_user
+            ldap_lite_query: $LDAPLite::MT::LDAPLite::CMS::method_ldap_lite_query
+        callbacks:
+            template_param.edit_author: $LDAPLite::MT::LDAPLite::CMS::cb_template_param_edit_author
+
+callbacks:
+    init_app: $LDAPLite::MT::LDAPLite::Util::cb_install_ldap_password_validator
