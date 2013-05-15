@@ -3,45 +3,58 @@ name: LDAP Lite
 author_name: ideaman's Inc.
 author_link: http://www.ideamans.com/
 version: 0.5
-# schema_version: 0.11
-description: <__trans phrase="User authentication with LDAP.">
+description: <__trans phrase="Authenticates password with LDAP at first.">
 l10n_class: MT::LDAPLite::L10N
-
-object_types:
-    author:
-        ldap_lite_auth_rule: string meta
 
 system_config_template:
     code: $LDAPLite::MT::LDAPLite::CMS::system_config
 
 config_settings:
+    LDAPLiteDisabled:
+        Default: 0
     LDAPLiteRootPassword: ~
     LDAPLiteTimeout:
         Default: 10
+    LDAPLiteNewPasswordLength:
+        Default: 12
 
 settings:
-    ldap_host: ~
+    ldap_host:
+        Scope: system
+        Default:
     ldap_port:
+        Scope: system
         Default: 389
-    ldap_auth_type:
+    ldap_auth:
+        Scope: system
         Default: simple
-    ldap_root_dn: ~
-    ldap_root_password: ~
-    ldap_users_dn: ~
+    ldap_root_dn:
+        Scope: system
+        Default:
+    ldap_root_password:
+        Scope: system
+        Default:
+    ldap_users_dn:
+        Scope: system
+        Default:
     ldap_user_name_attribute:
-        Default: displayname
+        Scope: system
+        Default: uid
     ldap_user_display_name_attribute:
+        Scope: system
         Default: displayname
     ldap_user_email_attribute:
+        Scope: system
         Default: email
-    ldap_user_attributes: ~
+    ldap_user_attributes:
+        Scope: system
+        Default: email
 
 applications:
     cms:
         methods:
             ldap_lite_test_connection: $LDAPLite::MT::LDAPLite::CMS::method_ldap_lite_test_connection
             ldap_lite_test_query_user: $LDAPLite::MT::LDAPLite::CMS::method_ldap_lite_test_query_user
-            ldap_lite_query: $LDAPLite::MT::LDAPLite::CMS::method_ldap_lite_query
         callbacks:
             template_param.edit_author: $LDAPLite::MT::LDAPLite::CMS::cb_template_param_edit_author
 

@@ -1,34 +1,46 @@
+<mt:if name="ldap_lite_disabled">
+    <mtapp:statusmsg
+       id="ldap-lite-diabled-msg"
+       class="warning"
+       can_close="1">
+        <__trans phrase="LDAP password authentication is disabled with LDAPLiteDisabled environment variable. Check mt-config.cgi file.">
+    </mtapp:statusmsg>
+</mt:if>
+
 <mtapp:setting
    id="ldap-lite-ldap_host"
-   label="<__trans phrase="Host">">
-  <input type="text" class="text" name="ldap_host" value="<mt:var name='ldap_host' escape='html'>" >
+   label="<__trans phrase="Host">"
+   required="1">
+  <input type="text" class="text" name="ldap_host" placeholder="<__trans phrase='Hostname or IP address'>" value="<mt:var name='ldap_host' escape='html'>" >
 </mtapp:setting>
 
 <mtapp:setting
    id="ldap-lite-ldap_port"
    label="<__trans phrase="Port">">
-  <input type="text" class="text number" name="ldap_port" value="<mt:var name='ldap_port' escape='html'>" >
+  <input type="text" class="text number" name="ldap_port" placeholder="389" value="<mt:var name='ldap_port' escape='html'>" >
 </mtapp:setting>
 
 <mtapp:setting
     id="ldap-lite-ldap_auth_type"
-    label="<__trans phrase="LDAP Authentication">">
+    label="<__trans phrase="Authentication">"
+    hint="LDAP connection requires authentication to search user?"
+    show_hint="1">
     <select name="ldap_auth" id="ldap-lite-ldap_auth-select">
-        <option value="none"<mt:if name="ldap_auth_type" eq="none"> selected="selected"</mt:if>><__trans phrase="None"></option>
-        <option value="simple"<mt:if name="ldap_auth_type" eq="simple"> selected="selected"</mt:if>><__trans phrase="Simple"></option>
+        <option value="none"<mt:if name="ldap_auth" eq="none"> selected="selected"</mt:if>><__trans phrase="None"></option>
+        <option value="simple"<mt:if name="ldap_auth" eq="simple"> selected="selected"</mt:if>><__trans phrase="Required"></option>
     </select>
 </mtapp:setting>
 
 <div id="ldap-lite-ldap_auth-dn" style="display:none">
 <mtapp:setting
    id="ldap-lite-ldap_root_dn"
-   label="<__trans phrase="Root DN">">
-  <input type="text" class="text" name="ldap_root_dn" value="<mt:var name='ldap_root_dn' escape='html'>" >
+   label="<__trans phrase="Connection DN">">
+  <input type="text" class="text" name="ldap_root_dn" placeholder="<__trans phrase='cn=root,cn=users,dc=example,dc=com'>" value="<mt:var name='ldap_root_dn' escape='html'>" >
 </mtapp:setting>
 
 <mtapp:setting
    id="ldap-lite-ldap_root_password"
-   label="<__trans phrase="Root Password">">
+   label="<__trans phrase="Connection DN Password">">
   <input type="password" class="text" name="ldap_root_password" value="<mt:var name='ldap_root_password' escape='html'>" >
 </mtapp:setting>
 </div>
@@ -36,25 +48,25 @@
 <mtapp:setting
    id="ldap-lite-ldap_users_dn"
    label="<__trans phrase="Users DN">">
-  <input type="text" class="text" name="ldap_users_dn" value="<mt:var name='ldap_users_dn' escape='html'>" >
+  <input type="text" class="text" name="ldap_users_dn" placeholder="<__trans phrase='cn=users,dc=example,dc=com'>" value="<mt:var name='ldap_users_dn' escape='html'>" >
 </mtapp:setting>
 
 <mtapp:setting
    id="ldap-lite-ldap_user_name_attribute"
    label="<__trans phrase="User Login Name Attribute">">
-  <input type="text" class="text" name="ldap_user_name_attribute" value="<mt:var name='ldap_user_name_attribute' escape='html'>" >
+  <input type="text" class="text" name="ldap_user_name_attribute" placeholder="uid" value="<mt:var name='ldap_user_name_attribute' escape='html'>" >
 </mtapp:setting>
 
 <mtapp:setting
    id="ldap-lite-ldap_user_display_name_attribute"
    label="<__trans phrase="User Display Name Attribute">">
-  <input type="text" class="text" name="ldap_user_display_name_attribute" value="<mt:var name='ldap_user_display_name_attribute' escape='html'>" >
+  <input type="text" class="text" name="ldap_user_display_name_attribute" placeholder="displayname" value="<mt:var name='ldap_user_display_name_attribute' escape='html'>" >
 </mtapp:setting>
 
 <mtapp:setting
    id="ldap-lite-ldap_user_email_attribute"
    label="<__trans phrase="User Email Attribute">">
-  <input type="text" class="text" name="ldap_user_email_attribute" value="<mt:var name='ldap_user_email_attribute' escape='html'>" >
+  <input type="text" class="text" name="ldap_user_email_attribute" placeholder="email" value="<mt:var name='ldap_user_email_attribute' escape='html'>" >
 </mtapp:setting>
 
 <mtapp:setting

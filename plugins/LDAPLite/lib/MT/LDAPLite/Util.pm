@@ -18,30 +18,23 @@ sub system_config {
     \%config;
 }
 
-sub ldap_lite_root_bind {
-    my $args = shift;
-
-}
-
 sub connect_ldap {
-    my $args;
-    if ( ref $_[0] eq 'HASH' ) {
-        $args = $_[0];
-    } else {
-        my %hash = @_;
-        $args = \%hash;
-    }
+    my ( $args ) = @_;
 
+    # Fill LDAP args from config if not passed
     my $config = system_config;
-
-    # Fill ldap args if not passed
     for my $prop ( keys %$config ) {
         next unless $prop =~ /^ldap_/;
         $args->{$prop} = $config->{$prop}
             unless defined $args->{$prop};
     }
 
-    my $ldap = Net::LDAP->new( $args->{ldap_host},
+    # No LDAP host configured
+    die plugin->translate('No LDAP server host defined.')
+        unless length($args->{ldap_host});
+
+    my $ldap = Net::LDAP->new(
+        $args->{ldap_host},
         timeout => MT->instance->config('LDAPLiteTimeout') || 10,
         port => $args->{ldap_port} || 389
     ) or die ( $@  || plugin->translate('An error occured at LDAP connection.') );
@@ -114,25 +107,34 @@ sub cb_install_ldap_password_validator {
 
 {
 
-    # Install is_valid_password for LDAP.
+    # Install MT::Author::is_valid_password for LDAP.
     no warnings qw(redefine);
     my $original = \&MT::Author::is_valid_password;
     *MT::Author::is_valid_password = sub {
         my $author = shift;
         my ( $pass, $crypted, $error_ref ) = @_;
 
+        # Skip LDAP authentication if disabled
+        return $original->($author, @_)
+            if MT->instance->config('LDAPLiteDisabled');
+
+        # Connect and search the user
         my $args = {};
         my $ldap = connect_ldap($args);
         my $entry = search_an_user($ldap, $args, $author->name);
+        finish_ldap($ldap);
 
+        # Verify password with binding
         my $dn = $entry->{dn};
-        print STDERR $dn, "\n\n";
-
-        my $msg = $ldap->bind($dn, password => $pass);
+        my $msg = $ldap->bind($dn, password => $pass || '');
+        use Data::Dumper;
+        print STDERR $msg->code, "\n", Dumper($msg), "\n";
+        print STDERR $pass, "\n\n";
         return 1 unless $msg->code;
 
         # TODO: Log to fail.
 
+        # Delegate to original is_valid_password
         $original->($author, @_);
     };
 }

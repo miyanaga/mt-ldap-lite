@@ -1,5 +1,7 @@
 jQuery(function() {
     var $ = jQuery;
+
+    // Indicator and error message
     var $indicator = $('<img />')
         .attr('id', 'ldap-lite-query-indicator')
         .attr('src', '<mt:var name="static_uri">images/indicator-login.gif')
@@ -8,10 +10,13 @@ jQuery(function() {
         .attr('id', 'ldap-lite-query-error')
         .css('display', 'none');
 
+    // Look up LDAP by Ajax
     var lookup_ldap = function() {
+        // Username
         var username = $('#name').val();
         if ( username === '' ) return;
 
+        // Reset
         $indicator.show();
         $error.hide();
         $('#external_id-field .field-content').text('');
@@ -21,44 +26,53 @@ jQuery(function() {
             'test_query_user': username
         }, function(data) {
             if ( data.error ) {
+                // Show error
                 $error
                     .text(data.error)
                     .show();
             } else if ( data.result.name ) {
+                // Show results
+                // TODO: sync other fields
                 $('#external_id-field .field-content').text(data.result.dn);
                 $('#nickname').val(data.result.display_name);
                 $('#email').val(data.result.email);
 
+                // New password
                 <mt:unless name="id">
-                $('#pass').attr('value', data.result.random_token);
-                $('#pass_verify').attr('value', data.result.random_token);
+                if ( $('#pass').val() == '' && $('#pass_verify').val() == '' ) {
+                    $('#pass').attr('value', data.result.random_token);
+                    $('#pass_verify').attr('value', data.result.random_token);
+                }
                 </mt:unless>
             }
         })
             .error(function(jqXHR) {
+                // Show HTTP error
                 $error
                     .text(jqXHR.status + ' ' + jqXHR.statusText)
                     .show();
             })
             .always(function() {
+                // Hide indicator
                 $indicator.hide();
             });
 
         return false;
     };
 
+<mt:if name="id">
+    // When updating, looking up LDAP via button
     var $button = $('<button href="javascript:void(0)"><__trans phrase="Lookup LDAP"></button>')
         .addClass('action button')
         .click(lookup_ldap);
 
-
-<mt:if name="id">
     $('#name')
         .addClass('short')
         .after($error)
         .after($indicator)
         .after($button);
 <mt:else>
+    // When creating, looking up LDAP automatically
     $('#name')
         .addClass('short')
         .after($error)
