@@ -2,7 +2,7 @@ id: LDAPLite
 name: LDAP Lite
 author_name: ideaman's Inc.
 author_link: http://www.ideamans.com/
-version: 0.5
+version: 0.7
 description: <__trans phrase="Authenticates password with LDAP at first.">
 l10n_class: MT::LDAPLite::L10N
 

@@ -64,9 +64,9 @@ sub search_an_user {
     die ( $msg->error || plugin->translate('An error occured at LDAP search.') )
         if $msg->code;
 
-    die ( plugin->translate('User named [_1] is not found.', $user ) )
+    die ( plugin->translate('User named [_1] is not found in LDAP directory.', $user ) )
         if $msg->count < 1;
-    die ( plugin->translate('Two or more than users found.') )
+    die ( plugin->translate('Two or more than users found for [_1]. This is no use for a name.', $user) )
         if $msg->count > 1;
 
     my %entry;
@@ -100,8 +100,7 @@ sub finish_ldap {
 sub cb_install_ldap_password_validator {
     my ( $cb, $app ) = @_;
 
-    # hook to override is_valid_password
-
+    # hook to override MT::Author::is_valid_password as below
     1;
 }
 
@@ -113,6 +112,7 @@ sub cb_install_ldap_password_validator {
     *MT::Author::is_valid_password = sub {
         my $author = shift;
         my ( $pass, $crypted, $error_ref ) = @_;
+        my $app = MT->instance;
 
         # Skip LDAP authentication if disabled
         return $original->($author, @_)
@@ -120,19 +120,62 @@ sub cb_install_ldap_password_validator {
 
         # Connect and search the user
         my $args = {};
-        my $ldap = connect_ldap($args);
-        my $entry = search_an_user($ldap, $args, $author->name);
+        my ( $ldap, $dn, $result_code );
+
+        # Connect
+        {
+            local $@;
+            eval {
+                $ldap = connect_ldap($args);
+            };
+            if ( $@ || !$ldap ) {
+                finish_ldap($ldap);
+                return $original->($author, @_);
+            }
+        }
+
+        # Search and get DN
+        {
+            local $@;
+            eval {
+                my $entry = search_an_user($ldap, $args, $author->name);
+                $dn = $entry->{dn};
+            };
+            if ( $@ || !$dn ) {
+                finish_ldap($ldap);
+                $app->log(
+                    plugin->translate(
+                        "User '[_1]' (ID:[_2]) is not found in LDAP directory. Tring internal password.",
+                        $author->name, $author->id
+                    ),
+                    level    => MT::Log::INFO(),
+                    class    => 'author',
+                    category => 'ldap_lite',
+                );
+                return $original->($author, @_);
+            }
+
+        }
+
+        # Bind with the DN
+        my $msg = $ldap->bind($dn, password => $pass || '');
+        if ( $result_code = $msg->code ) {
+            $app->log(
+                plugin->translate(
+                    "User '[_1]' (ID:[_2]) faild to log in with LDAP password. Tring internal password.",
+                    $author->name, $author->id
+                ),
+                level    => MT::Log::INFO(),
+                class    => 'author',
+                category => 'ldap_lite',
+            );
+        }
+
+        # Finish
         finish_ldap($ldap);
 
-        # Verify password with binding
-        my $dn = $entry->{dn};
-        my $msg = $ldap->bind($dn, password => $pass || '');
-        use Data::Dumper;
-        print STDERR $msg->code, "\n", Dumper($msg), "\n";
-        print STDERR $pass, "\n\n";
-        return 1 unless $msg->code;
-
-        # TODO: Log to fail.
+        # Logged in successfully
+        return 1 unless $result_code;
 
         # Delegate to original is_valid_password
         $original->($author, @_);

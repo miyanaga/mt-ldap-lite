@@ -35,12 +35,30 @@ use vars qw( %Lexicon );
     'Testing' => 'テスト',
     'Test User Query' => 'ユーザーの検索',
 
+    'No LDAP server host defined.' => 'LDAPサーバーが設定されていません。',
     'LDAP connection succeeded.' => 'LDAP接続が成功しました。',
     'No user specified.' => 'ユーザーが指定されていません。',
     'Failure to search user.' => 'ユーザーの検索に失敗しました。',
     'The user found. Username: "[_1]", display name: "[_2]" and email: "[_3]".'
         => 'ユーザーが見つかりました。ユーザー名:"[_1]" 表示名:"[_2]" メールアドレス:"[_3]"',
 
+    "User '[_1]' (ID:[_2]) is not found in LDAP directory. Tring internal password."
+        => "ユーザー '[_1]' (ID:[_2]) はLDAPディレクトリに見つかりません。内部パスワードを試行します。",
+    "User '[_1]' (ID:[_2]) faild to log in with LDAP password. Tring internal password."
+        => "ユーザー '[_1]' (ID:[_2]) はLDAPログインに失敗しました。内部パスワードを試行します。",
+
+    'An error occured at LDAP connection.' => 'LDAP接続でエラーが発生しました。',
+    'An error occured at LDAP search.' => 'LDAP検索でエラーが発生しました。',
+    'User named [_1] is not found in LDAP directory.'
+        => 'ユーザー [_1] はLDAPディレクトリに存在しません',
+    'Two or more than users found for [_1]. This is no use for a name.'
+        => '[_1] については2件以上の該当結果があります。ログイン名には使用できません。',
+    'User entry of [_1] has no attribute for user name: ([_2])'
+        => '[_1] に対するエントリーはログイン名のための属性 [_2] を持っていません。',
+    'User entry of [_1] has no attribute for display name: ([_2])'
+        => '[_1] に対するエントリーは表示名のための属性 [_2] を持っていません。',
+    'User entry of [_1] has no attribute for email: ([_2])'
+        => '[_1] に対するエントリーはメールアドレスのための属性 [_2] を持っていません。',
 );
 
 1;

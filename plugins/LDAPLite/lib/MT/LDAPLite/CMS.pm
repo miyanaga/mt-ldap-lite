@@ -28,6 +28,8 @@ sub method_ldap_lite_test_connection {
     };
 
     # Handle if error occured
+    my $error = $@;
+    $error =~ s/ at (.+?)$// if $error && !$MT::DebugMode;
     return $app->json_error($@) if $@;
 
     # Result message
@@ -51,7 +53,9 @@ sub method_ldap_lite_test_query_user {
     };
 
     # Handle if error occured
-    return $app->json_error($@) if $@;
+    my $error = $@;
+    $error =~ s/ at (.+?)$// if $error && !$MT::DebugMode;
+    return $app->json_error($error) if $error;
     return $app->json_error(plugin->translate('Failure to search user.'))
         unless $entry;
 
