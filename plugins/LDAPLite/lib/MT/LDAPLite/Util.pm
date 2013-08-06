@@ -5,6 +5,7 @@ use base 'Exporter';
 
 our @EXPORT = qw(plugin connect_ldap search_an_user finish_ldap);
 
+use Encode;
 use Net::LDAP;
 use MT::Author;
 
@@ -87,6 +88,9 @@ sub search_an_user {
         $attr = $args->{ldap_user_email_attribute} || 'email';
         $entry{email} = $e->get_value($attr)
             or die plugin->translate('User entry of [_1] has no attribute for email: ([_2])', $user, $attr);
+
+        $entry{display_name} = Encode::decode_utf8($entry{display_name})
+            unless Encode::is_utf8($entry{display_name});
     }
 
     return \%entry;

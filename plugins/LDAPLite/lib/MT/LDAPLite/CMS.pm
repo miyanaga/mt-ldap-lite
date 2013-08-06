@@ -2,6 +2,7 @@ package MT::LDAPLite::CMS;
 
 use strict;
 
+use Encode;
 use Net::LDAP;
 use Digest::MD5;
 use MT::LDAPLite::Util;
@@ -60,6 +61,8 @@ sub method_ldap_lite_test_query_user {
         unless $entry;
 
     # Message
+    $entry->{display_name} = Encode::decode_utf8($entry->{display_name})
+        unless Encode::is_utf8($entry->{display_name});
     $entry->{message} = plugin->translate(
         'The user found. Username: "[_1]", display name: "[_2]" and email: "[_3]".',
         $entry->{name} || '', $entry->{display_name} || '', $entry->{email} || ''
